@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Ordering System - Flow & Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .tab-button {
+            padding: 15px 30px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tab-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Flow Diagram Styles */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .flow-stage {
+            position: relative;
+        }
+
+        .flow-stage-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stage-number {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .flow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .flow-step-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .flow-step h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .flow-step p {
+            font-size: 0.95em;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+
+        .flow-arrow {
+            text-align: center;
+            font-size: 2em;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        /* Problem-Solution Visual Styles */
+        .problem-solution {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .problem-section, .solution-section {
+            padding: 30px;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .problem-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .solution-section {
+            background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+            color: white;
+        }
+
+        .section-header {
+            font-size: 2em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-icon {
+            font-size: 1.5em;
+        }
+
+        .issue-list, .benefit-list {
+            list-style: none;
+        }
+
+        .issue-item, .benefit-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .issue-item-icon, .benefit-item-icon {
+            font-size: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .issue-content h3, .benefit-content h3 {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        .issue-content p, .benefit-content p {
+            font-size: 0.95em;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+
+        .transformation-arrow {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 10;
+            font-size: 2em;
+        }
+
+        .roi-showcase {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .roi-showcase h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .roi-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .roi-stat {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .roi-stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .roi-stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .problem-solution {
+                grid-template-columns: 1fr;
+            }
+
+            .transformation-arrow {
+                position: static;
+                transform: rotate(90deg);
+                margin: 20px auto;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .content-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Smart QR-Based Ordering System</h1>
+            <p>Transforming Jannat Restaurant and Resorts</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('flow')">
+                📊 System Flow
+            </button>
+            <button class="tab-button" onclick="showTab('visual')">
+                🎨 Problem & Solution
+            </button>
+        </div>
+
+        <!-- Flow Diagram Section -->
+        <div id="flow" class="content-section active">
+            <div class="flow-container">
+                
+                <!-- Stage 1: Customer Arrival -->
+                <div class="flow-stage">
+                    <div class="flow-stage-title">
+                        <span class="stage-number">1</span>
+                        Customer Arrival & Seating
+                    </div>
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <div class="flow-step-icon">👥</div>
+                            <h3>Guest Arrives</h3>
+                            <p>Customer walks into Jannat Restaurant and is greeted by host</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🪑</div>
+                            <h3>Table Assignment</h3>
+                            <p>Host seats customer at designated table with QR code display</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">📱</div>
+                            <h3>QR Code Visible</h3>
+                            <p>Unique QR code clearly displayed on table tent or stand</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-arrow">⬇️</div>
+
+                <!-- Stage 2: Menu Access -->
+                <div class="flow-stage">
+                    <div class="flow-stage-title">
+                        <span class="stage-number">2</span>
+                        Digital Menu Access
+                    </div>
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <div class="flow-step-icon">📸</div>
+                            <h3>Scan QR Code</h3>
+                            <p>Customer scans QR code using smartphone camera (no app needed)</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🌐</div>
+                            <h3>Menu Loads</h3>
+                            <p>Digital menu opens instantly in browser with full catalog</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🖼️</div>
+                            <h3>Browse Items</h3>
+                            <p>Customer views items with images, descriptions, prices, and filters</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-arrow">⬇️</div>
+
+                <!-- Stage 3: Order Placement -->
+                <div class="flow-stage">
+                    <div class="flow-stage-title">
+                        <span class="stage-number">3</span>
+                        Order Placement
+                    </div>
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🛒</div>
+                            <h3>Add to Cart</h3>
+                            <p>Customer selects items manually or uses voice commands</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">✏️</div>
+                            <h3>Customize Order</h3>
+                            <p>Special instructions, modifications, and preferences added</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">✅</div>
+                            <h3>Confirm Order</h3>
+                            <p>Customer reviews and submits order with table number auto-attached</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-arrow">⬇️</div>
+
+                <!-- Stage 4: Kitchen Processing -->
+                <div class="flow-stage">
+                    <div class="flow-stage-title">
+                        <span class="stage-number">4</span>
+                        Kitchen Management
+                    </div>
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🔔</div>
+                            <h3>Order Received</h3>
+                            <p>Kitchen dashboard displays new order with notification alert</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">👨‍🍳</div>
+                            <h3>Preparation Starts</h3>
+                            <p>Kitchen staff begins cooking with estimated preparation time displayed</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">⏱️</div>
+                            <h3>Status Updates</h3>
+                            <p>Real-time order status tracking: preparing → ready → served</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-arrow">⬇️</div>
+
+                <!-- Stage 5: Service Delivery -->
+                <div class="flow-stage">
+                    <div class="flow-stage-title">
+                        <span class="stage-number">5</span>
+                        Food Service & Delivery
+                    </div>
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🔔</div>
+                            <h3>Ready Notification</h3>
+                            <p>Waiter receives alert when food is ready for delivery</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🍽️</div>
+                            <h3>Prompt Delivery</h3>
+                            <p>Food served hot to correct table based on order tracking</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">😊</div>
+                            <h3>Customer Satisfaction</h3>
+                            <p>Fast, accurate service enhances dining experience</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flow-arrow">⬇️</div>
+
+                <!-- Stage 6: Analytics & Insights -->
+                <div class="flow-stage">
+                    <div class="flow-stage-title">
+                        <span class="stage-number">6</span>
+                        Business Intelligence & Analytics
+                    </div>
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <div class="flow-step-icon">📊</div>
+                            <h3>Data Collection</h3>
+                            <p>System captures order data, timing, preferences, and patterns</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">📈</div>
+                            <h3>Analytics Dashboard</h3>
+                            <p>Admin reviews sales reports, popular items, and peak hours</p>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">💡</div>
+                            <h3>Business Decisions</h3>
+                            <p>Data-driven insights optimize menu, pricing, and operations</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Problem & Solution Visual Section -->
+        <div id="visual" class="content-section">
+            <div style="position: relative;">
+                <div class="problem-solution">
+                    <div class="problem-section">
+                        <div class="section-header">
+                            <span class="section-icon">⚠️</span>
+                            <span>Current Challenges</span>
+                        </div>
+                        <ul class="issue-list">
+                            <li class="issue-item">
+                                <span class="issue-item-icon">⏱️</span>
+                                <div class="issue-content">
+                                    <h3>Long Wait Times</h3>
+                                    <p>Customers wait for staff attention, menu distribution, and order taking. Peak hours become bottlenecks reducing table turnover.</p>
+                                </div>
+                            </li>
+                            <li class="issue-item">
+                                <span class="issue-item-icon">❌</span>
+                                <div class="issue-content">
+                                    <h3>Order Errors</h3>
+                                    <p>Miscommunication between customers, waiters, and kitchen leads to wrong orders, wasted food, and unhappy guests.</p>
+                                </div>
+                            </li>
+                            <li class="issue-item">
+                                <span class="issue-item-icon">👥</span>
+                                <div class="issue-content">
+                                    <h3>Staff Overload</h3>
+                                    <p>Waiters spend excessive time on repetitive tasks instead of building customer relationships and providing personalized service.</p>
+                                </div>
+                            </li>
+                            <li class="issue-item">
+                                <span class="issue-item-icon">📉</span>
+                                <div class="issue-content">
+                                    <h3>No Data Insights</h3>
+                                    <p>Limited visibility into customer preferences, peak times, and popular items makes business optimization difficult.</p>
+                                </div>
+                            </li>
+                            <li class="issue-item">
+                                <span class="issue-item-icon">📋</span>
+                                <div class="issue-content">
+                                    <h3>Costly Menu Updates</h3>
+                                    <p>Printing new menus for price changes, seasonal items, or promotions is expensive and time-consuming.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="solution-section">
+                        <div class="section-header">
+                            <span class="section-icon">✨</span>
+                            <span>Smart Solutions</span>
+                        </div>
+                        <ul class="benefit-list">
+                            <li class="benefit-item">
+                                <span class="benefit-item-icon">⚡</span>
+                                <div class="benefit-content">
+                                    <h3>Instant Service</h3>
+                                    <p>QR code scanning provides immediate menu access and order placement. 15-25% improvement in table turnover rates.</p>
+                                </div>
+                            </li>
+                            <li class="benefit-item">
+                                <span class="benefit-item-icon">✅</span>
+                                <div class="benefit-content">
+                                    <h3>Perfect Accuracy</h3>
+                                    <p>Digital orders go directly to kitchen eliminating miscommunication. Up to 85% reduction in order errors.</p>
+                                </div>
+                            </li>
+                            <li class="benefit-item">
+                                <span class="benefit-item-icon">🎯</span>
+                                <div class="benefit-content">
+                                    <h3>Optimized Labor</h3>
+                                    <p>Staff focus on delivery and customer experience while system handles order taking. Manage more tables with existing team.</p>
+                                </div>
+                            </li>
+                            <li class="benefit-item">
+                                <span class="benefit-item-icon">📊</span>
+                                <div class="benefit-content">
+                                    <h3>Rich Analytics</h3>
+                                    <p>Comprehensive dashboard tracks sales, popular items, customer behavior, and peak times for data-driven decisions.</p>
+                                </div>
+                            </li>
+                            <li class="benefit-item">
+                                <span class="benefit-item-icon">🔄</span>
+                                <div class="benefit-content">
+                                    <h3>Dynamic Menus</h3>
+                                    <p>Update prices, items, and promotions instantly without printing costs. Test strategies and measure impact in real-time.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="transformation-arrow">➡️</div>
+            </div>
+
+            <div class="roi-showcase">
+                <h2>💰 Return on Investment</h2>
+                <p style="font-size: 1.1em; margin-bottom: 20px;">Your investment pays for itself in just 3-4 months</p>
+                <div class="roi-stats">
+                    <div class="roi-stat">
+                        <div class="roi-stat-value">5,00,000</div>
+                        <div class="roi-stat-label">One-Time Investment (BDT)</div>
+                    </div>
+                    <div class="roi-stat">
+                        <div class="roi-stat-value">1,60,000</div>
+                        <div class="roi-stat-label">Monthly Net Benefit (BDT)</div>
+                    </div>
+                    <div class="roi-stat">
+                        <div class="roi-stat-value">3-4</div>
+                        <div class="roi-stat-label">Months to Payback</div>
+                    </div>
+                    <div class="roi-stat">
+                        <div class="roi-stat-value">19,20,000</div>
+                        <div class="roi-stat-label">Annual Net Benefit (BDT)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all content sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected content section
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
